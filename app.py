@@ -7,6 +7,7 @@ PRODUTOS_JSON = 'produtos.json'
 CARRINHO_JSON = 'carrinho.json'
 HISTORICO_JSON = 'historico_compras.json'
 
+# Funções para leitura e escrita em arquivos JSON
 def ler_json(caminho):
     try:
         with open(caminho, 'r', encoding='utf-8') as arquivo:
@@ -18,15 +19,25 @@ def escrever_json(caminho, dados):
     with open(caminho, 'w', encoding='utf-8') as arquivo:
         json.dump(dados, arquivo, indent=4, ensure_ascii=False)
 
+# Dados iniciais
+usuarios_iniciais = [
+    {"nome": "Adriano Nishimoto", "email": "admin@pystore.com", "senha": "admin123", "admin": True}
+]
+
 produtos_iniciais = [
     {"nome": "Camiseta", "preco": 29.99, "descricao": "Camiseta de algodão", "quantidade": 50},
     {"nome": "Calça Jeans", "preco": 79.90, "descricao": "Calça jeans masculina", "quantidade": 30},
     {"nome": "Tênis Esportivo", "preco": 149.99, "descricao": "Tênis para corrida", "quantidade": 20}
 ]
 
+# Inicializa usuários e produtos se não existirem
+if not os.path.exists(USUARIOS_JSON):
+    escrever_json(USUARIOS_JSON, usuarios_iniciais)
+
 if not os.path.exists(PRODUTOS_JSON):
     escrever_json(PRODUTOS_JSON, produtos_iniciais)
 
+# Funções de Interface e Menu
 def titulo():
     print("""\n
 ██████╗░██╗░░░██╗░██████╗████████╗░█████╗░██████╗░███████╗
@@ -56,8 +67,11 @@ def mostrar_menu():
     print("6. Visualizar Carrinho")
     print("7. Finalizar Compra")
     print("8. Histórico de Compras")
+    print("9. Adicionar Produto ao Catálogo (Admin)")
+    print("10. Remover Produto do Catálogo (Admin)")
     print("0. Sair do Sistema")
 
+# Funções para manipulação de usuários
 def cadastrar_usuario():
     os.system('cls')
     nome = input("Digite o nome do usuário: ")
@@ -67,7 +81,7 @@ def cadastrar_usuario():
     if any(usuario['email'] == email for usuario in usuarios):
         print('Erro: E-mail já cadastrado.')
     else:
-        usuarios.append({"nome": nome, "email": email, "senha": senha})
+        usuarios.append({"nome": nome, "email": email, "senha": senha, "admin": False})
         escrever_json(USUARIOS_JSON, usuarios)
         print(f'\nUsuário {nome} cadastrado com sucesso!')
     input("\nPressione Enter para voltar ao menu...")
@@ -77,14 +91,16 @@ def autenticar_usuario():
     email = input("Digite o e-mail: ")
     senha = input("Digite a senha: ")
     usuarios = ler_json(USUARIOS_JSON)
-    if any(usuario['email'] == email and usuario['senha'] == senha for usuario in usuarios):
+    usuario = next((u for u in usuarios if u['email'] == email and u['senha'] == senha), None)
+    if usuario:
         print("\nAutenticado com sucesso!")
         time.sleep(2)
-        return True
+        return usuario
     print("Falha na autenticação.")
     time.sleep(2)
-    return False
+    return None
 
+# Funções para manipulação de produtos e carrinho
 def exibir_catalogo(controle=True):
     os.system('cls')
     produtos = ler_json(PRODUTOS_JSON)
@@ -190,7 +206,43 @@ def mostrar_historico_compras():
             print(f'Método de Pagamento: {compra["metodo_pagamento"]}')
     input("\nPressione Enter para voltar ao menu...")
 
+# Funções de manipulação de catálogo (admin)
+def adicionar_produto_catalogo(usuario):
+    if not usuario['admin']:
+        print('Acesso negado: Apenas administradores podem adicionar produtos ao catálogo.')
+        time.sleep(2)
+        return
+    os.system('cls')
+    nome = input("Digite o nome do produto: ")
+    preco = float(input("Digite o preço do produto: "))
+    descricao = input("Digite a descrição do produto: ")
+    quantidade = int(input("Digite a quantidade em estoque: "))
+    produtos = ler_json(PRODUTOS_JSON)
+    produtos.append({"nome": nome, "preco": preco, "descricao": descricao, "quantidade": quantidade})
+    escrever_json(PRODUTOS_JSON, produtos)
+    print(f'\nProduto {nome} adicionado ao catálogo com sucesso!')
+    input("\nPressione Enter para voltar ao menu...")
+
+def remover_produto_catalogo(usuario):
+    if not usuario['admin']:
+        print('Acesso negado: Apenas administradores podem remover produtos do catálogo.')
+        time.sleep(2)
+        return
+    os.system('cls')
+    exibir_catalogo(False)
+    nome_produto = input("\nDigite o nome do produto que deseja remover do catálogo: ")
+    produtos = ler_json(PRODUTOS_JSON)
+    produto = next((p for p in produtos if p['nome'] == nome_produto), None)
+    if produto:
+        produtos.remove(produto)
+        escrever_json(PRODUTOS_JSON, produtos)
+        print(f'\nProduto {nome_produto} removido do catálogo.')
+    else:
+        print('Produto não encontrado no catálogo.')
+    input("\nPressione Enter para voltar ao menu...")
+
 def main():
+    usuario_logado = None
     while True:
         mostrar_menu()
         opcao = input("\nDigite o número da opção desejada: ")
@@ -198,19 +250,44 @@ def main():
         if opcao == '1':
             cadastrar_usuario()
         elif opcao == '2':
-            autenticar_usuario()
+            usuario_logado = autenticar_usuario()
         elif opcao == '3':
             exibir_catalogo()
         elif opcao == '4':
-            adicionar_produto_carrinho()
+            if usuario_logado:
+                adicionar_produto_carrinho()
+            else:
+                print("Faça login primeiro.")
         elif opcao == '5':
-            remover_produto_carrinho()
+            if usuario_logado:
+                remover_produto_carrinho()
+            else:
+                print("Faça login primeiro.")
         elif opcao == '6':
-            mostrar_carrinho()
+            if usuario_logado:
+                mostrar_carrinho()
+            else:
+                print("Faça login primeiro.")
         elif opcao == '7':
-            finalizar_compra()
+            if usuario_logado:
+                finalizar_compra()
+            else:
+                print("Faça login primeiro.")
         elif opcao == '8':
-            mostrar_historico_compras()
+            if usuario_logado:
+                mostrar_historico_compras()
+            else:
+                print("Faça login primeiro.")
+        elif opcao == '9':
+            if usuario_logado:
+                adicionar_produto_catalogo(usuario_logado)
+            else:
+                print("Faça login primeiro.")
+        elif opcao == '10':
+            if usuario_logado:
+                remover_produto_catalogo(usuario_logado)
+            else:
+                print("Faça login primeiro.")
         elif opcao == '0':
             break
         else:
