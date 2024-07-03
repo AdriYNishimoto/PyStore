@@ -142,7 +142,7 @@ def remover_produto_carrinho():
             print('Número inválido.')
     input("\nPressione Enter para voltar ao menu...")
 
-def mostrar_carrinho():
+def mostrar_carrinho(finalizando_compra=False):
     os.system('cls')
     carrinho = ler_json(CARRINHO_JSON)
     if not carrinho:
@@ -151,7 +151,11 @@ def mostrar_carrinho():
         print('\nProdutos no carrinho:')
         for item in carrinho:
             print(f' - {item["produto"]["nome"]}: {item["quantidade"]} unidades')
-    input("\nPressione Enter para voltar ao menu...")
+
+    if finalizando_compra:
+        input("\nPressione Enter para prosseguir na finalização da compra...")
+    else:
+        input("\nPressione Enter para voltar ao menu...")
 
 def calcular_total_carrinho():
     carrinho = ler_json(CARRINHO_JSON)
@@ -169,7 +173,7 @@ def atualizar_estoque():
 
 def finalizar_compra():
     os.system('cls')
-    mostrar_carrinho()
+    mostrar_carrinho(finalizando_compra=True)
     total = calcular_total_carrinho()
     if total == 0:
         print('\nCarrinho vazio. Não é possível finalizar a compra.')
