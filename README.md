@@ -22,8 +22,10 @@ Visualização de Carrinho:
   
 Processo de Compra: 
   Permitir que o usuário finalize a compra dos itens no carrinho, inserindo informações de pagamento. 
+  
 Histórico de Compras: 
   Manter um registro das compras anteriores do usuário para consulta futura. 
+  
 Administração de Estoque: 
   Permitir que administradores atualizem a quantidade de produtos no estoque. 
   Permitir que administradores adicionem novos produtos ao estoque.
