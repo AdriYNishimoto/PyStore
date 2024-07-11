@@ -1,9 +1,9 @@
 # PyStore
 Projeto de sistema de mercado em Python contendo:
 
-Cadastro de Usuário: 
-  Permitir que novos usuários se cadastrem no sistema fornecendo informações como nome, e-mail e senha. 
-Login de Usuário: 
+Cadastro de Usuário:\n 
+  Permitir que novos usuários se cadastrem no sistema fornecendo informações como nome, e-mail e senha. \n
+Login de Usuário: \n
   Autenticar usuários cada 
   atrados para acessar o sistema. 
 Catálogo de Produtos: 
